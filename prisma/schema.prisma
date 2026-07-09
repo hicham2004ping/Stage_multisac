@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id Int @id @default(autoincrement())
+
+  nom String
+
+  users User[]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  nom String
+
+  prenom String
+
+  email String @unique
+
+  service String
+
+  site String
+
+  isActive Boolean @default(true)
+
+  roleId Int
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  tokenLogs TokenUsageLog[]
+
+  chatSessions ChatSession[]
+
+  auditLog AuditLog[]
+}
+
+model AiProvider {
+  id        Int             @id @default(autoincrement())
+  nom       String
+  modelName String
+  enabled   Boolean         @default(true)
+  priority  Int
+  costRules Float
+  tokenLogs TokenUsageLog[]
+  analyses  AiAnalysis[]
+  messages  ChatMessage[]
+}
+
+model TokenUsageLog {
+  id           Int        @id @default(autoincrement())
+  inputTokens  Int
+  outputTokens Int
+  costEstimate Float
+  providerId   Int
+  aiProvider   AiProvider @relation(fields: [providerId], references: [id])
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+}
+
+model ChatSession {
+  id           Int           @id @default(autoincrement())
+  title        String?
+  createdAt    DateTime      @default(now())
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id])
+  chatmessages ChatMessage[]
+}
+
+model ChatMessage {
+  id         Int         @id @default(autoincrement())
+  content    String
+  createdAt  DateTime    @default(now())
+  tokens     Int
+  providerId Int
+  provider   AiProvider  @relation(fields: [providerId], references: [id])
+  sessionId  Int
+  session    ChatSession @relation(fields: [sessionId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  createdAt DateTime @default(now())
+}
+
+model EmailMessage {
+  id              Int               @id @default(autoincrement())
+  fromEmail       String
+  content         String
+  subject         String
+  status          String
+  hash            String
+  receivedAt      DateTime
+  emailAttachment EmailAttachment[]
+  aianalyses      AiAnalysis[]
+}
+
+model EmailAttachment {
+  id       Int          @id @default(autoincrement())
+  emailId  Int
+  email    EmailMessage @relation(fields: [emailId], references: [id])
+  fileName String
+  mimeType String
+  chemin   String
+  size     Int
+}
+
+model AiAnalysis {
+  id           Int           @id @default(autoincrement())
+  summary      String
+  category     String
+  priority     String
+  confidence   Float
+  emailId      Int
+  email        EmailMessage  @relation(fields: [emailId], references: [id])
+  providerId   Int
+  provider     AiProvider    @relation(fields: [providerId], references: [id])
+  ticketDrafts TicketDraft[]
+}
+
+model TicketDraft {
+  id           Int              @id @default(autoincrement())
+  title        String
+  status       String
+  aiAnalysisId Int
+  aiAnalysis   AiAnalysis       @relation(fields: [aiAnalysisId], references: [id])
+  msupportLogs MsupportApiLog[]
+}
+
+model MsupportApiLog {
+  id           Int         @id @default(autoincrement())
+  StatusCode   Int
+  requestJson  String
+  createdAt    DateTime    @default(now())
+  responseJson String
+  ticketId     Int
+  ticket       TicketDraft @relation(fields: [ticketId], references: [id])
+}
