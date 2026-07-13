@@ -1,0 +1,27 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[SsoGroupMapping] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [ssoGroup] NVARCHAR(1000) NOT NULL,
+    [roleId] INT NOT NULL,
+    CONSTRAINT [SsoGroupMapping_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+-- AddForeignKey
+ALTER TABLE [dbo].[SsoGroupMapping] ADD CONSTRAINT [SsoGroupMapping_roleId_fkey] FOREIGN KEY ([roleId]) REFERENCES [dbo].[Role]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

@@ -4,8 +4,7 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -19,7 +18,18 @@ model Role {
   nom String
 
   users User[]
+
+  SsoGroupMappings SsoGroupMapping []
 }
+
+model SsoGroupMapping{
+    id Int @id @default(autoincrement())
+    ssoGroup String
+    roleId Int
+    role Role @relation(fields: [roleId], references: [id])
+}
+
+
 
 model User {
   id Int @id @default(autoincrement())

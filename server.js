@@ -6,6 +6,8 @@ const express = require("express");
 //Import the auth route
 const authRoute=require("./src/modules/auth/route");
 
+const conversationRoute=require("./src/modules/conversations/route");
+
 const app = express();
 
 app.get("/",(req,res)=>{
@@ -14,6 +16,7 @@ app.get("/",(req,res)=>{
 
 app.use("/auth",authRoute);
 
+app.use("/conversation",conversationRoute);
 
 app.listen(port,()=>{
 console.log(`le serveur fonctionne sur ${port}`);
